@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Propriety {
-  cod_imovel String @id @default(uuid())
+  cod_imovel String @id
   mod_fiscal Float
   num_area   Float
   municipio  String

@@ -1,19 +1,9 @@
 import { Controller, Post, Body, UsePipes } from '@nestjs/common'
-import { ZodValidationPipe } from 'src/pipes/zod-validation-pipes'
+import { ZodValidationPipe } from 'src/utils/pipes/zod-validation-pipes'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { z } from 'zod'
-
-const createRegisterSchema = z.object({
-  mod_fiscal: z.number(),
-  num_area: z.number(),
-  municipio: z.string(),
-  nome_propr: z.string(),
-  cpf_cnpj: z.string(),
-  proprietar: z.string(),
-  situacao: z.string(),
-  shape_leng: z.number(),
-  shape_area: z.number(),
-})
+import { createRegisterSchema } from 'src/dto/create-register.dto'
+import { uuidGenerator } from 'src/utils/uuid-generator'
 
 // pra definir o tipo do body
 type CreateRegisterSchema = z.infer<typeof createRegisterSchema>
@@ -40,6 +30,7 @@ export class CreateRegisterController {
 
     await this.prisma.propriety.create({
       data: {
+        cod_imovel: uuidGenerator(),
         mod_fiscal,
         num_area,
         municipio,
