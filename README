@@ -1,8 +1,14 @@
 [ x ] Listar cadastros
 [ x ] Buscar cadastro pelo cpf, nome da propriedade ou nome do proprietário
+[ x ] Cadastrar nova propriedade
+[ x ] Validar tipos de dados para cadastro
+    - float: maximo 19 casas depois da virgula
+[ x ] Gerar o codigo do imovel no padrao 
+
+[ ] Conectar com mysql
+[ ] cpf e cnpj pode ser passado com caracteres especiais ou sem, ambos serao validados
 [ ]
-[ ]
-[ ]
-[ ]
-[ ]
-[ ]
+
+
+
+UUID: GO- 7 números - 32 números e letras

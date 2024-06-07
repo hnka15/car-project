@@ -6,8 +6,8 @@ export const zodNumberSchema = z.number().refine(
     const [integerPart, fractionalPart] = value.toString().split('.')
 
     return (
-      integerPart.length <= 8 &&
-      (!fractionalPart || fractionalPart.length <= 11)
+      integerPart.length <= 11 &&
+      (!fractionalPart || fractionalPart.length <= 19)
     )
   },
   {
