@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:3000
+
+
+# @name register
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{  
+    "municipio": "Goiania",
+    "nome_propr": "Terra",
+    "cpf_cnpj": "123456789",
+    "proprietar": "Hianka"
+
+}
+
+
+### 
+GET {{baseUrl}}/register
+Content-Type: application/json

@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Propriety {
+  cod_imovel String @id @default(uuid())
+  mod_fiscal Float
+  num_area   Float
+  municipio  String
+  nome_propr String
+  cpf_cnpj   String
+  proprietar String
+  situacao   String
+  shape_leng Float
+  shape_area Float
+
+  @@map("propriety")
+}
