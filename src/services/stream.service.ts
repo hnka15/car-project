@@ -9,6 +9,8 @@ export class StreamService {
 
   async readCSV(path: string) {
     let contador = 0
+    const batchSize = 100 // Tamanho do lote para inserção em massa
+    const batch = []
 
     return new Promise<void>((resolve, reject) => {
       const stream = fs
@@ -22,32 +24,55 @@ export class StreamService {
         contador++
         console.log('data', data)
 
-        try {
-          await this.prisma.propriety.create({
-            data: {
-              cod_imovel: data.cod_imovel,
-              mod_fiscal: parseFloat(data.mod_fiscal),
-              num_area: parseFloat(data.num_area),
-              municipio: data.municipio,
-              nome_propr: data.nome_propr,
-              cpf_cnpj: data.cpf_cnpj,
-              proprietar: data.proprietar,
-              situacao: data.situacao,
-              shape_leng: parseFloat(data.shape_leng),
-              shape_area: parseFloat(data.shape_area),
-            },
-          })
-          console.log('##############')
-        } catch (error) {
-          console.error('Error creating propriety:', error)
-          reject(error)
+        // Adiciona o dado ao lote
+        batch.push({
+          cod_imovel: data.cod_imovel,
+          mod_fiscal: parseFloat(data.mod_fiscal),
+          num_area: parseFloat(data.num_area),
+          municipio: data.municipio,
+          nome_propr: data.nome_propr,
+          cpf_cnpj: data.cpf_cnpj,
+          proprietar: data.proprietar,
+          situacao: data.situacao,
+          shape_leng: parseFloat(data.shape_leng),
+          shape_area: parseFloat(data.shape_area),
+        })
+
+        // Se o lote atingir o tamanho definido, insere os dados no banco
+        if (batch.length >= batchSize) {
+          console.log('BATCH:', contador)
+
+          try {
+            await this.prisma.propriety.createMany({
+              data: batch,
+              skipDuplicates: true, // Ignora duplicados (se aplicável)
+            })
+            console.log(`Inserido lote de ${batch.length} registros.`)
+            batch.length = 0 // Limpa o lote após a inserção
+          } catch (error) {
+            console.error('Error creating propriety batch:', error)
+            reject(error)
+          }
         }
 
         // Retoma o stream após a operação assíncrona terminar
         stream.resume()
       })
 
-      stream.on('end', () => {
+      stream.on('end', async () => {
+        // Insere qualquer dado remanescente no lote
+        if (batch.length > 0) {
+          try {
+            await this.prisma.propriety.createMany({
+              data: batch,
+              skipDuplicates: true,
+            })
+            console.log(`Inserido lote final de ${batch.length} registros.`)
+          } catch (error) {
+            console.error('Error creating final propriety batch:', error)
+            reject(error)
+          }
+        }
         console.log('CSV lido, contador: ', contador)
         resolve()
       })
