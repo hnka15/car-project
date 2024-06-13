@@ -5,9 +5,10 @@
     - float: maximo 19 casas depois da virgula
 [ x ] Gerar o codigo do imovel no padrao 
 
-[ ] Conectar com mysql
-[ ] cpf e cnpj pode ser passado com caracteres especiais ou sem, ambos serao validados
-[ ]
+[ x ] Conectar com mysql
+[ x ] cpf e cnpj pode ser passado com caracteres especiais ou sem, ambos serao validados
+[ x ] Aceita somente municipios validados
+
 
 
 

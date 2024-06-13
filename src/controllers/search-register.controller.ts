@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { SearchRegisterDto } from 'src/dto/search-register.dto'
-import { PrismaService } from 'src/prisma/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 
 @Controller('register')
 export class SearchRegisterController {

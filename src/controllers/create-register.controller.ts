@@ -1,6 +1,6 @@
 import { Controller, Post, Body, UsePipes } from '@nestjs/common'
 import { ZodValidationPipe } from 'src/utils/pipes/zod-validation-pipes'
-import { PrismaService } from 'src/prisma/prisma.service'
+import { PrismaService } from 'src/services/prisma.service'
 import { z } from 'zod'
 import { createRegisterSchema } from 'src/dto/create-register.dto'
 import { uuidGenerator } from 'src/utils/uuid-generator'
