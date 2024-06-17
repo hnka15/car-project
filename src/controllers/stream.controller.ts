@@ -1,17 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common'
 import { StreamService } from 'src/services/stream.service'
-import { readCsvSchema } from 'src/dto/read-csv.dto'
-import { z } from 'zod'
-// import { prisma } from '../client'
-type ReadCsvSchema = z.infer<typeof readCsvSchema>
+import { FileInterceptor } from '@nestjs/platform-express'
 
-@Controller('read')
+@Controller('upload')
 export class StreamController {
   constructor(private readonly streamService: StreamService) {}
 
   @Post()
-  async handle(@Body() body: ReadCsvSchema) {
-    const { path } = body
-    return await this.streamService.readCSV(path)
+  @UseInterceptors(FileInterceptor('file'))
+  async handle(@UploadedFile() file) {
+    if (!file) {
+      throw new Error('No file uploaded.')
+    }
+    console.log('entrei')
+
+    return await this.streamService.readCSV(file.path)
   }
 }

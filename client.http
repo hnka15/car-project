@@ -15,5 +15,13 @@ Content-Type: application/json
 
 
 ### 
-GET {{baseUrl}}/register
-Content-Type: application/json
+# @name upload
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="TABELASICAR2024.csv"
+Content-Type: text/csv
+
+< ./TABELASICAR2024.csv
+--boundary--

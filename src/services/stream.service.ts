@@ -9,7 +9,7 @@ export class StreamService {
 
   async readCSV(path: string) {
     let contador = 0
-    const batchSize = 100 // Tamanho do lote para inserção em massa
+    const batchSize = 200 // Tamanho do lote para inserção em massa
     const batch = []
 
     return new Promise<void>((resolve, reject) => {
@@ -19,7 +19,6 @@ export class StreamService {
 
       stream.on('data', async (data) => {
         // Pausa o stream para esperar a operação assíncrona terminar
-        stream.pause()
 
         contador++
         console.log('data', data)
@@ -40,7 +39,8 @@ export class StreamService {
 
         // Se o lote atingir o tamanho definido, insere os dados no banco
         if (batch.length >= batchSize) {
-          console.log('BATCH:', contador)
+          stream.pause()
+          console.log('Linhas lidas:', contador)
 
           try {
             await this.prisma.propriety.createMany({

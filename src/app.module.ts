@@ -7,6 +7,9 @@ import { SearchRegisterController } from './controllers/search-register.controll
 import { StreamService } from './services/stream.service'
 import { StreamController } from './controllers/stream.controller'
 import { PrismaService } from './services/prisma.service'
+import { MulterModule } from '@nestjs/platform-express'
+import { extname } from 'path'
+import { diskStorage } from 'multer'
 
 @Module({
   // Esse forRoot é usado para passar configurações
@@ -15,6 +18,24 @@ import { PrismaService } from './services/prisma.service'
       validate: (env) => envSchema.parse(env),
       isGlobal: true, // pra essa configuração ser aplicada a todos os modulos, caso tiver
     }), // pra usar as variaveis amb. importe o configService
+    MulterModule.register({
+      storage: diskStorage({
+        destination: './storage',
+        filename: (req, file, callback) => {
+          // Modifique o nome do arquivo aqui
+          const date = new Date()
+          const newName =
+            date.getDate().toString() +
+            '-' +
+            date.getMonth().toString() +
+            '-' +
+            date.getFullYear().toString() +
+            '-' +
+            file.originalname
+          return callback(null, `${newName}${extname(file.originalname)}`)
+        },
+      }),
+    }),
   ],
   controllers: [
     CreateRegisterController,
