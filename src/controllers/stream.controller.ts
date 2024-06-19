@@ -12,7 +12,6 @@ export class StreamController {
     if (!file) {
       throw new Error('No file uploaded.')
     }
-    console.log('entrei')
 
     return await this.streamService.readCSV(file.path)
   }

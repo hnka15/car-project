@@ -8,7 +8,6 @@ import { StreamService } from './services/stream.service'
 import { StreamController } from './controllers/stream.controller'
 import { PrismaService } from './services/prisma.service'
 import { MulterModule } from '@nestjs/platform-express'
-import { extname } from 'path'
 import { diskStorage } from 'multer'
 
 @Module({
@@ -25,14 +24,11 @@ import { diskStorage } from 'multer'
           // Modifique o nome do arquivo aqui
           const date = new Date()
           const newName =
-            date.getDate().toString() +
-            '-' +
             date.getMonth().toString() +
             '-' +
             date.getFullYear().toString() +
-            '-' +
-            file.originalname
-          return callback(null, `${newName}${extname(file.originalname)}`)
+            '- CAR'
+          return callback(null, `${newName}`)
         },
       }),
     }),

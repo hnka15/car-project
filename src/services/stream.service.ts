@@ -2,15 +2,30 @@ import { Injectable } from '@nestjs/common'
 import * as fs from 'fs'
 import * as csvParser from 'csv-parser'
 import { PrismaService } from './prisma.service'
+import { Prisma } from '@prisma/client'
+import { bulk } from 'sql-template-tag'
 
+const date = new Date()
 @Injectable()
 export class StreamService {
   constructor(private readonly prisma: PrismaService) {}
 
   async readCSV(path: string) {
-    let contador = 0
+    // const tableName =
+    //   date.getMonth().toString() + '-' + date.getFullYear().toString() + '- CAR'
     const batchSize = 200 // Tamanho do lote para inserção em massa
     const batch = []
+
+    const tableName = 'propriety2'
+    let contador = 0
+
+    const result = await this.tableExists(tableName)
+
+    if (!result) {
+      console.log('tabela nao existe')
+
+      this.createTable(tableName)
+    }
 
     return new Promise<void>((resolve, reject) => {
       const stream = fs
@@ -18,62 +33,41 @@ export class StreamService {
         .pipe(csvParser({ separator: ';' }))
 
       stream.on('data', async (data) => {
-        // Pausa o stream para esperar a operação assíncrona terminar
-
         contador++
-        console.log('data', data)
 
-        // Adiciona o dado ao lote
-        batch.push({
-          cod_imovel: data.cod_imovel,
-          mod_fiscal: parseFloat(data.mod_fiscal),
-          num_area: parseFloat(data.num_area),
-          municipio: data.municipio,
-          nome_propr: data.nome_propr,
-          cpf_cnpj: data.cpf_cnpj,
-          proprietar: data.proprietar,
-          situacao: data.situacao,
-          shape_leng: parseFloat(data.shape_leng),
-          shape_area: parseFloat(data.shape_area),
-        })
+        batch.push([
+          data.cod_imovel,
+          parseFloat(data.mod_fiscal),
+          parseFloat(data.num_area),
+          data.municipio,
+          data.nome_propr,
+          data.cpf_cnpj,
+          data.proprietar,
+          data.situacao,
+          parseFloat(data.shape_leng),
+          parseFloat(data.shape_area),
+        ])
 
-        // Se o lote atingir o tamanho definido, insere os dados no banco
         if (batch.length >= batchSize) {
           stream.pause()
+          await this.insertData(tableName, batch)
+
+          batch.length = 0 // Limpa o lote após a inserção
           console.log('Linhas lidas:', contador)
-
-          try {
-            await this.prisma.propriety.createMany({
-              data: batch,
-              skipDuplicates: true, // Ignora duplicados (se aplicável)
-            })
-            console.log(`Inserido lote de ${batch.length} registros.`)
-            batch.length = 0 // Limpa o lote após a inserção
-          } catch (error) {
-            console.error('Error creating propriety batch:', error)
-            reject(error)
-          }
+          stream.resume()
         }
-
-        // Retoma o stream após a operação assíncrona terminar
-        stream.resume()
       })
 
       stream.on('end', async () => {
-        // Insere qualquer dado remanescente no lote
         if (batch.length > 0) {
           try {
-            await this.prisma.propriety.createMany({
-              data: batch,
-              skipDuplicates: true,
-            })
-            console.log(`Inserido lote final de ${batch.length} registros.`)
+            await this.insertData(tableName, batch)
           } catch (error) {
             console.error('Error creating final propriety batch:', error)
             reject(error)
           }
         }
-        console.log('CSV lido, contador: ', contador)
+        // console.log('CSV lido, contador: ', contador)
         resolve()
       })
 
@@ -82,5 +76,40 @@ export class StreamService {
         reject(error)
       })
     })
+  }
+
+  async createTable(tableName: string) {
+    try {
+      console.log(`Tabela ${tableName} criada com sucesso.`)
+    } catch (error) {
+      console.error('Erro ao criar a tabela "propriety":', error)
+      throw error
+    }
+  }
+
+  async tableExists(tableName: string) {
+    const result = await this.prisma.$queryRaw`
+    SELECT COUNT(*) as table_exists
+    FROM information_schema.tables
+    WHERE table_schema = 'car' AND table_name = ${tableName};
+`
+
+    console.log(result[0].table_exists > 0)
+
+    return result[0].table_exists > 0 // retorna array de objetos
+  }
+
+  async insertData(tableName: string, batch) {
+    try {
+      const res = await // .$executeRawUnsafe(`${query}, ${dataTeste}`)
+      this.prisma.$executeRaw`
+        INSERT INTO propriety
+        ( cod_imovel, mod_fiscal,num_area, municipio,nome_propr,cpf_cnpj,proprietar, situacao, shape_leng, shape_area)
+        VALUES ${Prisma.join(
+          batch.map((row) => Prisma.sql`(${Prisma.join(row)})`),
+        )};`
+
+      console.log('retorno: ', res)
+    } catch (error) {}
   }
 }
